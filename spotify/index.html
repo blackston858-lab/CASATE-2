@@ -1,0 +1,1365 @@
+<!-- it's is full a full music webapp like spotify or apple music with a lot of features like playlists, albums, artists, genres, search, and more. also it has moderan ui/ux design with dark mode and light mode support. you can create your own playlists, listen to your favorite songs, and discover new music. enjoy the music experience with this app! this will be a amzaing aap that noon has seen in there life. -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title> NOSTALGIST MUSIC </title>
+
+    <!-- Google font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        :root {
+            --bg: #071026;
+            /* darker base for cyberpunk */
+            --panel: rgba(2, 6, 23, 0.7);
+            --muted: #bdbdbd;
+            --accent: #6cffb8;
+            --accent-2: #34a0ff;
+            --neon-pink: #ff3ca6;
+            --neon-purple: #8a2be2;
+            --card: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.03);
+            --radius: 12px;
+            --max-width: 1200px;
+        }
+
+        /* Light theme variables (switched by .light on body) */
+        body.light {
+            --bg: #f6f7f9;
+            --panel: #ffffff;
+            --muted: #555;
+            --card: #f2f4f7;
+            --glass: rgba(0, 0, 0, 0.03);
+            color: #111;
+        }
+
+        /* reset & layout */
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+            background: linear-gradient(180deg, var(--bg), #030213 80%);
+            color: #fff;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* CYBERPUNK BACKGROUND LAYERS */
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            display: block;
+        }
+
+        .cyber-overlay {
+            pointer-events: none;
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            mix-blend-mode: screen;
+            background:
+                radial-gradient(600px 300px at 10% 20%, rgba(52, 160, 255, 0.06), transparent),
+                radial-gradient(500px 340px at 90% 80%, rgba(255, 58, 166, 0.06), transparent);
+            animation: overlayShift 12s linear infinite;
+            opacity: 0.9;
+        }
+
+        @keyframes overlayShift {
+            0% {
+                transform: translateY(0) rotate(0deg)
+            }
+
+            50% {
+                transform: translateY(-20px) rotate(1deg)
+            }
+
+            100% {
+                transform: translateY(0) rotate(0deg)
+            }
+        }
+
+        /* neon grid */
+        .neon-grid {
+            pointer-events: none;
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image:
+                linear-gradient(transparent 90%, rgba(100, 255, 200, 0.03) 90%),
+                repeating-linear-gradient(0deg, rgba(255, 30, 150, 0.015) 0 1px, transparent 1px 40px),
+                repeating-linear-gradient(90deg, rgba(52, 160, 255, 0.01) 0 1px, transparent 1px 60px);
+            opacity: 0.7;
+            transform: translateZ(0);
+            animation: gridPulse 6s ease-in-out infinite;
+            mix-blend-mode: overlay;
+        }
+
+        @keyframes gridPulse {
+            0% {
+                filter: blur(0px) saturate(1);
+                opacity: 0.6
+            }
+
+            50% {
+                filter: blur(1px) saturate(1.1);
+                opacity: 0.9
+            }
+
+            100% {
+                filter: blur(0px) saturate(1);
+                opacity: 0.6
+            }
+        }
+
+        /* app */
+        .app {
+            width: 100%;
+            max-width: var(--max-width);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            height: calc(100vh - 40px);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.00));
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 20px 50px rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(6px) saturate(120%);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logo {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #021027;
+            box-shadow: 0 6px 30px rgba(108, 255, 184, 0.08), 0 0 18px rgba(52, 160, 255, 0.08);
+            position: relative;
+            overflow: visible;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(255, 58, 166, 0.08), rgba(52, 160, 255, 0.04));
+            filter: blur(10px);
+            opacity: 0.6;
+        }
+
+        .brand h1 {
+            font-size: 18px;
+            margin: 0;
+            letter-spacing: 0.6px
+        }
+
+        .brand h1 span {
+            color: var(--neon-pink)
+        }
+
+        .nav {
+            display: flex;
+            gap: 16px;
+            align-items: center
+        }
+
+        .nav-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--accent-2)
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .icon-btn {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            color: var(--muted);
+            border: none;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            box-shadow: 0 6px 16px rgba(20, 30, 60, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 40px rgba(52, 160, 255, 0.06)
+        }
+
+        .icon-btn.playing {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #021027
+        }
+
+        /* Layout main area */
+        .main {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+            overflow: hidden
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            padding: 18px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 0;
+            overflow: auto;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+        }
+
+        .sidebar h3 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: var(--muted)
+        }
+
+        .playlist-list,
+        .genre-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .playlist-item,
+        .genre-item {
+            padding: 8px 10px;
+            border-radius: 10px;
+            color: var(--muted);
+            background: transparent;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all .18s ease;
+        }
+
+        .playlist-item:hover,
+        .genre-item:hover {
+            background: linear-gradient(90deg, rgba(52, 160, 255, 0.03), rgba(255, 58, 166, 0.02));
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.02)
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            background: transparent;
+            padding: 18px;
+            border-radius: 12px;
+            min-height: 0;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 0;
+            align-items: center
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 12px 14px;
+            border-radius: 10px 0 0 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.02);
+            color: inherit;
+            outline: none;
+            font-size: 14px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+        }
+
+        .search-bar button {
+            padding: 12px 14px;
+            border-radius: 0 10px 10px 0;
+            border: none;
+            background: linear-gradient(90deg, var(--neon-pink), var(--accent-2));
+            color: #021027;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(255, 58, 166, 0.06);
+        }
+
+        .featured {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px
+        }
+
+        .album-item {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), transparent);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: start;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            position: relative;
+            overflow: visible;
+        }
+
+        .album-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 18px 50px rgba(7, 26, 54, 0.75)
+        }
+
+        .album-item img {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: box-shadow .18s ease, transform .18s ease;
+        }
+
+        .album-item:hover img {
+            box-shadow: 0 10px 30px rgba(255, 58, 166, 0.08);
+            transform: scale(1.02);
+            border-color: rgba(255, 58, 166, 0.12)
+        }
+
+        .album-item h3 {
+            margin: 0;
+            font-size: 15px;
+            color: linear-gradient(90deg, var(--accent), var(--accent-2))
+        }
+
+        .album-item p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .album-actions {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px
+        }
+
+        /* Songs list */
+        .song-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .song-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            justify-content: space-between;
+        }
+
+        .song-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .song-meta img {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover
+        }
+
+        .song-meta .title {
+            font-weight: 600
+        }
+
+        .song-meta .artist {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* Footer / Now playing */
+        .player {
+            height: 104px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .now-playing {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .now-playing img {
+            width: 64px;
+            height: 64px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.03)
+        }
+
+        .song-info h4 {
+            margin: 0;
+            font-size: 14px
+        }
+
+        .song-info p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center
+        }
+
+        .control-button {
+            background: var(--panel);
+            border: none;
+            color: var(--muted);
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer
+        }
+
+        .control-button.play {
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #021027;
+            padding: 12px 14px
+        }
+
+        /* visualizer canvas in footer */
+        #viz {
+            width: 320px;
+            height: 56px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.12), transparent);
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            body {
+                padding: 12px
+            }
+
+            .sidebar {
+                display: none
+            }
+
+            .nav {
+                display: none
+            }
+
+            .brand h1 {
+                display: none
+            }
+
+            .content {
+                padding: 14px
+            }
+
+            .player {
+                height: auto;
+                flex-direction: column;
+                align-items: flex-start
+            }
+        }
+
+        @media (max-width:520px) {
+            .featured {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))
+            }
+
+            .now-playing img {
+                width: 48px;
+                height: 48px
+            }
+        }
+
+        /* animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn .35s ease-in-out
+        }
+
+        /* small helpers */
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* Roman Urdu: upload panel ke liye styling - agar yeh feature hataana ho to in styles ko hata dena */
+        .upload-panel {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .drop-zone {
+            padding: 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.01);
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.02)
+        }
+
+        .drop-zone.dragover {
+            background: rgba(52, 160, 255, 0.02)
+        }
+
+        .upload-btn {
+            background: linear-gradient(90deg, var(--neon-pink), var(--accent-2));
+            color: #021027;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        .app h1 {
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- animated background canvas and overlay -->
+    <canvas id="bg-canvas" aria-hidden="true"></canvas>
+    <div class="cyber-overlay" aria-hidden="true"></div>
+    <div class="neon-grid" aria-hidden="true"></div>
+
+    <div class="app">
+        <header class="header fade-in">
+            <div class="brand">
+                <div class="logo">N</div>
+                <div>
+                    <h1>nostalgist <span>.</span></h1>
+                    <div class="muted">Your music, reimagined</div>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="#">Home</a>
+                <a class="nav-link" href="#">Browse</a>
+                <a class="nav-link" href="#">Radio</a>
+                <a class="nav-link" href="#">Library</a>
+                <a class="nav-link" href="#">Search</a>
+            </nav>
+
+            <div class="header-actions">
+                <button id="toggle-theme" class="icon-btn" title="Toggle theme" aria-pressed="false">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <!-- Spotify connect -->
+                <button id="connect-spotify" class="icon-btn" title="Connect Spotify">
+                    <i class="fab fa-spotify" style="color:var(--accent-2)"></i>
+                </button>
+                <button id="open-menu" class="icon-btn" title="Open menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="icon-btn" title="Account">
+                    <i class="fas fa-user"></i> <span class="muted" id="username"
+                        style="margin-left:8px">Username</span>
+                </div>
+                <button id="signout" class="icon-btn" title="Sign out" style="margin-left:8px;display:none"><i
+                        class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </header>
+
+        <main class="main">
+            <aside class="sidebar" id="sidebar">
+                <div>
+                    <h3>Your Playlists</h3>
+                    <ul class="playlist-list">
+                        <li class="playlist-item">Chill Vibes</li>
+                        <li class="playlist-item">Workout</li>
+                        <li class="playlist-item">Focus</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3>Genres</h3>
+                    <ul class="genre-list">
+                        <li class="genre-item">Pop</li>
+                        <li class="genre-item">Rock</li>
+                        <li class="genre-item">Jazz</li>
+                        <li class="genre-item">Classical</li>
+                    </ul>
+                </div>
+            </aside>
+
+            <section class="content" id="content">
+                <div class="search-bar" role="search">
+                    <input id="search" type="text" placeholder="Search for songs, artists, albums..."
+                        aria-label="Search">
+                    <button aria-label="Search"><i class="fas fa-search"></i></button>
+                </div>
+
+                <!-- Spotify panel: connect + search -->
+                <div id="spotify-panel" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <div id="spotify-status" class="muted">Spotify: <strong id="spotify-user">Not connected</strong>
+                        </div>
+                        <button id="spotify-token-btn" class="icon-btn" style="margin-left:auto">Token</button>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <input id="spotify-query" type="text" placeholder="Search Spotify (requires token)"
+                            style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit">
+                        <button id="spotify-search" class="icon-btn">Search</button>
+                    </div>
+                    <div id="spotify-results"
+                        style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px"></div>
+
+                    <!-- Roman Urdu: Naya feature - artist apna gaana upload kar sakta hai. Agar baad mein hataana ho to upload-panel related HTML, CSS aur JS hata dena. -->
+                    <div class="upload-panel" id="upload-panel">
+                        <div style="font-weight:600">Artist Upload</div>
+                        <div class="muted">Select an audio file to upload and make it public on this app.</div>
+                        <div id="drop-zone" class="drop-zone">Drag & drop audio here or click to select</div>
+                        <input type="file" id="upload-file" accept="audio/*" style="display:none">
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <button id="upload-btn" class="icon-btn upload-btn">Upload</button>
+                            <label style="display:flex;align-items:center;gap:8px;color:var(--muted)"><input
+                                    type="checkbox" id="public-checkbox" checked> Public</label>
+                        </div>
+                        <div id="upload-status" class="muted"></div>
+                    </div>
+
+                    <div>
+                        <h2 style="margin:0 0 8px 0">Featured Albums</h2>
+                        <div class="featured" id="featured">
+                            <!-- Albums: images loaded from placeholder service -->
+                            <div class="album-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+                                <img src="https://picsum.photos/seed/album1/400/300" alt="Album image 1" loading="lazy">
+                                <h3>Midnight Memories</h3>
+                                <p>Various Artists</p>
+                                <div class="album-actions">
+                                    <button class="icon-btn play-album"><i class="fas fa-play"></i> Play</button>
+                                    <div class="muted">42 tracks</div>
+                                </div>
+                            </div>
+
+                            <div class="album-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">
+                                <img src="https://picsum.photos/seed/album2/400/300" alt="Album image 2" loading="lazy">
+                                <h3>Live Sessions</h3>
+                                <p>Indie Collective</p>
+                                <div class="album-actions">
+                                    <button class="icon-btn play-album"><i class="fas fa-play"></i> Play</button>
+                                    <div class="muted">18 tracks</div>
+                                </div>
+                            </div>
+
+                            <div class="album-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3">
+                                <img src="https://picsum.photos/seed/album3/400/300" alt="Album image 3" loading="lazy">
+                                <h3>Retro Beats</h3>
+                                <p>DJ Nostalgic</p>
+                                <div class="album-actions">
+                                    <button class="icon-btn play-album"><i class="fas fa-play"></i> Play</button>
+                                    <div class="muted">24 tracks</div>
+                                </div>
+                            </div>
+
+                            <div class="album-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3">
+                                <img src="https://picsum.photos/seed/album4/400/300" alt="Album image 4" loading="lazy">
+                                <h3>Studio Days</h3>
+                                <p>The Producers</p>
+                                <div class="album-actions">
+                                    <button class="icon-btn play-album"><i class="fas fa-play"></i> Play</button>
+                                    <div class="muted">30 tracks</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 style="margin:12px 0 8px 0">Top Songs</h2>
+                        <div class="song-list">
+                            <div class="song-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+                                <div class="song-meta">
+                                    <img src="https://picsum.photos/seed/singer1/80/80" alt="song 1" loading="lazy">
+                                    <div>
+                                        <div class="title">Song 1</div>
+                                        <div class="artist">Artist 1</div>
+                                    </div>
+                                </div>
+                                <div class="controls">
+                                    <div class="muted">3:45</div>
+                                    <button class="icon-btn"><i class="fas fa-ellipsis-h"></i></button>
+                                    <button class="icon-btn play-track"><i class="fas fa-play"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="song-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">
+                                <div class="song-meta">
+                                    <img src="https://picsum.photos/seed/guitar1/80/80" alt="song 2" loading="lazy">
+                                    <div>
+                                        <div class="title">Song 2</div>
+                                        <div class="artist">Artist 2</div>
+                                    </div>
+                                </div>
+                                <div class="controls">
+                                    <div class="muted">4:02</div>
+                                    <button class="icon-btn"><i class="fas fa-ellipsis-h"></i></button>
+                                    <button class="icon-btn play-track"><i class="fas fa-play"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="song-item"
+                                data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3">
+                                <div class="song-meta">
+                                    <img src="https://picsum.photos/seed/piano1/80/80" alt="song 3" loading="lazy">
+                                    <div>
+                                        <div class="title">Song 3</div>
+                                        <div class="artist">Artist 3</div>
+                                    </div>
+                                </div>
+                                <div class="controls">
+                                    <div class="muted">2:58</div>
+                                    <button class="icon-btn"><i class="fas fa-ellipsis-h"></i></button>
+                                    <button class="icon-btn play-track"><i class="fas fa-play"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </section>
+        </main>
+
+        <footer class="player">
+            <div class="now-playing">
+                <img src="https://picsum.photos/seed/nowplaying/80/80" alt="Now playing" loading="lazy">
+                <div class="song-info">
+                    <h4 id="now-title">—</h4>
+                    <p id="now-artist">—</p>
+                </div>
+            </div>
+
+            <div class="controls" aria-label="player controls">
+                <button id="prev" class="control-button"><i class="fas fa-backward"></i></button>
+                <button id="playPause" class="control-button play"><i class="fas fa-play"></i></button>
+                <button id="next" class="control-button"><i class="fas fa-forward"></i></button>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:10px">
+                <canvas id="viz" width="320" height="56" aria-hidden="true"></canvas>
+                <i class="fas fa-volume-down muted"></i>
+                <input id="vol" type="range" min="0" max="100" value="50" />
+                <i class="fas fa-volume-up muted"></i>
+            </div>
+        </footer>
+    </div>
+
+    <!-- hidden audio element used by player -->
+    <audio id="audio" crossorigin="anonymous"></audio>
+
+    <script>
+        (function () {
+            /* AUTH + UI (unchanged logic) */
+            const body = document.body;
+            const toggle = document.getElementById('toggle-theme');
+            const openMenu = document.getElementById('open-menu');
+            const sidebar = document.getElementById('sidebar');
+
+            const token = localStorage.getItem('nostalgist_token');
+            const username = localStorage.getItem('nostalgist_user') || 'Username';
+            const userEl = document.getElementById('username');
+            const signoutBtn = document.getElementById('signout');
+            if (!token) { window.location.href = 'login.html'; return; }
+            if (userEl) userEl.textContent = username;
+            if (signoutBtn) { signoutBtn.style.display = 'inline-flex'; signoutBtn.addEventListener('click', () => { localStorage.removeItem('nostalgist_token'); localStorage.removeItem('nostalgist_user'); window.location.href = 'login.html'; }); }
+
+            const saved = localStorage.getItem('theme');
+            if (saved === 'light') body.classList.add('light');
+            toggle.addEventListener('click', () => {
+                const isLight = body.classList.toggle('light');
+                toggle.setAttribute('aria-pressed', String(isLight));
+                localStorage.setItem('theme', isLight ? 'light' : 'dark');
+                toggle.querySelector('i').className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+            });
+            openMenu.addEventListener('click', () => {
+                if (window.innerWidth <= 900) {
+                    const shown = sidebar.style.display !== 'block';
+                    sidebar.style.display = shown ? 'block' : 'none';
+                    if (shown) sidebar.scrollTop = 0;
+                } else { sidebar.scrollTop = 0; }
+            });
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth <= 900) {
+                    if (!sidebar.contains(e.target) && !openMenu.contains(e.target) && e.target.closest('#open-menu') === null) {
+                        sidebar.style.display = 'none';
+                    }
+                }
+            });
+
+            /* small fallback script for images */
+            (function () {
+                const fallbackSmall = 'https://via.placeholder.com/80x80?text=No+Image';
+                const fallbackLarge = 'https://via.placeholder.com/400x300?text=No+Image';
+                document.querySelectorAll('img').forEach(img => {
+                    if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+                    img.addEventListener('error', () => {
+                        const w = img.getAttribute('width') || img.width || 0;
+                        const h = img.getAttribute('height') || img.height || 0;
+                        if (w <= 80 || h <= 80) img.src = fallbackSmall;
+                        else img.src = fallbackLarge;
+                    });
+                });
+            })();
+
+            /* AUDIO PLAYER + VISUALIZER */
+            const audio = document.getElementById('audio');
+            const playPause = document.getElementById('playPause');
+            const prevBtn = document.getElementById('prev');
+            const nextBtn = document.getElementById('next');
+            const nowTitle = document.getElementById('now-title');
+            const nowArtist = document.getElementById('now-artist');
+            const vol = document.getElementById('vol');
+            let queue = []; let currentIndex = -1;
+
+            // build queue from available track elements (data-src attr)
+            document.querySelectorAll('.album-item, .song-item').forEach(el => {
+                const src = el.getAttribute('data-src');
+                if (src) queue.push({ src, title: el.querySelector('.title') ? el.querySelector('.title').textContent : el.querySelector('h3')?.textContent || 'Track', artist: el.querySelector('.artist')?.textContent || '' });
+            });
+
+            function loadTrack(i) {
+                if (i < 0 || i >= queue.length) return;
+                currentIndex = i;
+                const t = queue[i];
+                audio.src = t.src;
+                nowTitle.textContent = t.title;
+                nowArtist.textContent = t.artist || '—';
+                audio.play().catch(() => { /* play blocked until user gesture */ });
+                document.querySelectorAll('.icon-btn.playing').forEach(b => b.classList.remove('playing'));
+                // highlight corresponding buttons
+            }
+
+            // play album / track buttons
+            document.querySelectorAll('.play-album').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const item = btn.closest('.album-item');
+                    if (!item) return;
+                    const src = item.getAttribute('data-src');
+                    if (!src) return;
+                    // push at head of queue and play
+                    queue.unshift({ src, title: item.querySelector('h3')?.textContent || 'Album', artist: item.querySelector('p')?.textContent || '' });
+                    loadTrack(0);
+                    btn.classList.add('playing');
+                });
+            });
+            document.querySelectorAll('.play-track').forEach((btn, idx) => {
+                btn.addEventListener('click', () => {
+                    // find corresponding song-item index in queue
+                    const item = btn.closest('.song-item');
+                    const src = item.getAttribute('data-src');
+                    const found = queue.findIndex(q => q.src === src);
+                    if (found >= 0) loadTrack(found); else { queue.unshift({ src, title: item.querySelector('.title')?.textContent || 'Track', artist: item.querySelector('.artist')?.textContent || '' }); loadTrack(0); }
+                });
+            });
+
+            playPause.addEventListener('click', () => {
+                if (audio.paused) { audio.play(); playPause.querySelector('i').className = 'fas fa-pause'; playPause.classList.add('playing'); }
+                else { audio.pause(); playPause.querySelector('i').className = 'fas fa-play'; playPause.classList.remove('playing'); }
+            });
+            prevBtn.addEventListener('click', () => { if (currentIndex > 0) loadTrack(currentIndex - 1); });
+            nextBtn.addEventListener('click', () => { if (currentIndex < queue.length - 1) loadTrack(currentIndex + 1); });
+
+            vol.addEventListener('input', () => { audio.volume = vol.value / 100; });
+
+            /* Visualizer: uses WebAudio if available, else simple fallback animation */
+            const viz = document.getElementById('viz');
+            const vctx = viz.getContext('2d');
+            let audioCtx, analyser, source, dataArray, bufferLength;
+            function setupAudioAnalyzer() {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 256;
+                    bufferLength = analyser.frequencyBinCount;
+                    dataArray = new Uint8Array(bufferLength);
+                    source = audioCtx.createMediaElementSource(audio);
+                    source.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                } catch (e) {
+                    audioCtx = null;
+                }
+            }
+            setupAudioAnalyzer();
+
+            function drawVisualizer() {
+                requestAnimationFrame(drawVisualizer);
+                vctx.clearRect(0, 0, viz.width, viz.height);
+                let bars = 40;
+                let barWidth = viz.width / bars;
+                if (analyser && audioCtx) {
+                    analyser.getByteFrequencyData(dataArray);
+                    for (let i = 0; i < bars; i++) {
+                        const val = dataArray[Math.floor(i * (bufferLength / bars))] / 255;
+                        const h = val * viz.height;
+                        const x = i * barWidth;
+                        const grd = vctx.createLinearGradient(0, 0, 0, viz.height);
+                        grd.addColorStop(0, 'rgba(255,58,166,0.9)');
+                        grd.addColorStop(0.5, 'rgba(52,160,255,0.9)');
+                        grd.addColorStop(1, 'rgba(108,255,184,0.6)');
+                        vctx.fillStyle = grd;
+                        vctx.fillRect(x + 2, viz.height - h, barWidth - 4, h);
+                    }
+                } else {
+                    // idle animation
+                    for (let i = 0; i < bars; i++) {
+                        const val = 0.2 + 0.05 * Math.sin(Date.now() / 300 + i);
+                        const h = val * viz.height;
+                        const x = i * barWidth;
+                        vctx.fillStyle = `rgba(52,160,255,${0.6 * val})`;
+                        vctx.fillRect(x + 2, viz.height - h, barWidth - 4, h);
+                    }
+                }
+            }
+            drawVisualizer();
+
+            /* BACKGROUND PARTICLES in canvas */
+            const bgCanvas = document.getElementById('bg-canvas');
+            const bctx = bgCanvas.getContext('2d');
+            let particles = [];
+            function resizeBg() { bgCanvas.width = innerWidth; bgCanvas.height = innerHeight; }
+            window.addEventListener('resize', resizeBg);
+            resizeBg();
+            function createParticles(n = 60) {
+                particles = [];
+                for (let i = 0; i < n; i++) {
+                    particles.push({
+                        x: Math.random() * bgCanvas.width,
+                        y: Math.random() * bgCanvas.height,
+                        r: 0.5 + Math.random() * 2.5,
+                        vx: (Math.random() - 0.5) * 0.2,
+                        vy: (Math.random() - 0.5) * 0.6,
+                        hue: 180 + Math.random() * 140
+                    });
+                }
+            }
+            createParticles(80);
+            function drawBg() {
+                requestAnimationFrame(drawBg);
+                bctx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+                // soft gradient
+                const g = bctx.createLinearGradient(0, 0, bgCanvas.width, bgCanvas.height);
+                g.addColorStop(0, 'rgba(20,8,36,0.3)');
+                g.addColorStop(1, 'rgba(3,0,20,0.6)');
+                bctx.fillStyle = g;
+                bctx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+                // moving particles
+                for (let p of particles) {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < -10) p.x = bgCanvas.width + 10;
+                    if (p.x > bgCanvas.width + 10) p.x = -10;
+                    if (p.y < -10) p.y = bgCanvas.height + 10;
+                    if (p.y > bgCanvas.height + 10) p.y = -10;
+
+                    bctx.beginPath();
+                    const alpha = 0.09 + (p.r / 3) * 0.1;
+                    bctx.fillStyle = `hsla(${p.hue},80%,60%,${alpha})`;
+                    bctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    bctx.fill();
+                    // glow
+                    bctx.shadowColor = `hsla(${p.hue},90%,60%,0.4)`;
+                    bctx.shadowBlur = 8;
+                }
+                bctx.shadowBlur = 0;
+            }
+            drawBg();
+
+            /* small accessibility: resume audio context on first gesture */
+            function resumeAudioContext() {
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                document.removeEventListener('click', resumeAudioContext);
+                document.removeEventListener('keydown', resumeAudioContext);
+            }
+            document.addEventListener('click', resumeAudioContext);
+            document.addEventListener('keydown', resumeAudioContext);
+        })();
+
+        /* SPOTIFY INTEGRATION: Web Playback SDK scaffold + OAuth implicit flow */
+        (function () {
+            const connectBtn = document.getElementById('connect-spotify');
+            const tokenBtn = document.getElementById('spotify-token-btn');
+            const statusUser = document.getElementById('spotify-user');
+            const spotifySearchBtn = document.getElementById('spotify-search');
+            const spotifyQuery = document.getElementById('spotify-query');
+            const spotifyResults = document.getElementById('spotify-results');
+
+            // CONFIG: put your client id and allowed redirect URI here
+            const SPOTIFY_CLIENT_ID = '68b2c9d2d0634902a894701e6c296361';
+            const REDIRECT_URI = window.location.origin + window.location.pathname; // ensure this is whitelisted in your Spotify app
+            const SCOPES = [
+                'streaming',
+                'user-read-email',
+                'user-read-private',
+                'user-modify-playback-state',
+                'user-read-playback-state'
+            ].join(' ');
+
+            // token helpers
+            function setSpotifyTokenRaw(token, expiresIn) {
+                const store = { token, expiresAt: expiresIn ? (Date.now() + expiresIn * 1000) : null };
+                localStorage.setItem('spotify_token_info', JSON.stringify(store));
+                updateStatus();
+            }
+            function getSpotifyToken() {
+                try {
+                    const raw = localStorage.getItem('spotify_token_info');
+                    if (!raw) return null;
+                    const obj = JSON.parse(raw);
+                    if (obj.expiresAt && Date.now() > obj.expiresAt) { localStorage.removeItem('spotify_token_info'); return null; }
+                    return obj.token;
+                } catch (e) { return null; }
+            }
+            function removeSpotifyToken() { localStorage.removeItem('spotify_token_info'); updateStatus(); }
+
+            function updateStatus() { const t = getSpotifyToken(); statusUser.textContent = t ? 'Connected' : 'Not connected'; }
+            updateStatus();
+
+            // open Spotify authorize (implicit grant) in popup
+            connectBtn.addEventListener('click', () => {
+                if (!SPOTIFY_CLIENT_ID || SPOTIFY_CLIENT_ID === 'YOUR_SPOTIFY_CLIENT_ID') {
+                    alert('Set your SPOTIFY_CLIENT_ID in the code (developer dashboard) before using full playback.');
+                    return;
+                }
+                const url = new URL('https://accounts.spotify.com/authorize');
+                url.searchParams.set('client_id', SPOTIFY_CLIENT_ID);
+                url.searchParams.set('response_type', 'token');
+                url.searchParams.set('redirect_uri', REDIRECT_URI);
+                url.searchParams.set('scope', SCOPES);
+                url.searchParams.set('show_dialog', 'true');
+                // open popup
+                window.open(url.toString(), 'spotify_auth', 'width=600,height=800');
+            });
+
+            // token button (manual paste) kept for convenience
+            tokenBtn.addEventListener('click', () => {
+                const cur = getSpotifyToken() || '';
+                const p = prompt('Paste your Spotify access token (or leave empty to clear):', cur);
+                if (p === null) return;
+                if (p.trim() === '') { removeSpotifyToken(); return; }
+                // user may not know expiry; store without expires
+                setSpotifyTokenRaw(p.trim(), null);
+            });
+
+            // handle token from URL hash when redirecting back (implicit flow)
+            function handleAuthFromUrlHash() {
+                if (!location.hash) return;
+                const h = location.hash.substring(1);
+                const params = new URLSearchParams(h);
+                const access_token = params.get('access_token');
+                const expires_in = parseInt(params.get('expires_in') || '0', 10);
+                if (access_token) {
+                    setSpotifyTokenRaw(access_token, expires_in || null);
+                    // remove hash to clean URL
+                    history.replaceState(null, '', location.pathname + location.search);
+                    // initialize SDK if possible
+                    initSpotifyPlayer();
+                }
+            }
+            handleAuthFromUrlHash();
+
+            // OAuth popup helper: if opened as redirect, postMessage token back to opener and close
+            (function () {
+                if (window.opener && location.hash) {
+                    try {
+                        const h = location.hash.substring(1);
+                        const params = new URLSearchParams(h);
+                        const access_token = params.get('access_token');
+                        const expires_in = params.get('expires_in');
+                        if (access_token) {
+                            window.opener.postMessage({ type: 'spotify_token', token: access_token, expires_in: expires_in ? parseInt(expires_in, 10) : null }, window.location.origin);
+                            setTimeout(() => window.close(), 300);
+                        }
+                    } catch (e) { }
+                }
+            })();
+
+            // Load Spotify Web Playback SDK and initialize player
+            let spotifyPlayer = null; let spotifyDeviceId = null; let spotifyReady = false;
+            function loadSpotifySDK() {
+                if (window.Spotify) return Promise.resolve();
+                return new Promise((resolve) => {
+                    const s = document.createElement('script'); s.src = 'https://sdk.scdn.co/spotify-player.js'; s.async = true; document.body.appendChild(s);
+                    s.onload = () => resolve();
+                });
+            }
+
+            async function initSpotifyPlayer() {
+                const token = getSpotifyToken();
+                if (!token) return;
+                await loadSpotifySDK();
+                if (!window.Spotify) return;
+                if (spotifyPlayer) return; // already created
+                spotifyPlayer = new window.Spotify.Player({
+                    name: 'Nostalgist Web Player',
+                    getOAuthToken: cb => { cb(token); },
+                    volume: 0.5
+                });
+
+                // event handlers
+                spotifyPlayer.addListener('ready', ({ device_id }) => {
+                    spotifyDeviceId = device_id; spotifyReady = true; updateStatus();
+                    console.log('Spotify Player ready with device id', device_id);
+                });
+                spotifyPlayer.addListener('not_ready', ({ device_id }) => {
+                    if (spotifyDeviceId === device_id) spotifyReady = false;
+                    console.log('Spotify Player not ready', device_id);
+                });
+                spotifyPlayer.addListener('initialization_error', ({ message }) => console.error('Init error', message));
+                spotifyPlayer.addListener('authentication_error', ({ message }) => { console.error('Auth error', message); removeSpotifyToken(); alert('Spotify auth error. Please reconnect.'); });
+
+                // connect the player
+                spotifyPlayer.connect().then(success => { if (success) console.log('Connected to Spotify Player'); });
+            }
+
+            // attempt to initialize if token present
+            if (getSpotifyToken()) { initSpotifyPlayer(); }
+
+            // helper to play a track URI on user's active device (or transfer to our SDK device)
+            async function playOnSpotify(uri) {
+                const token = getSpotifyToken();
+                if (!token) { alert('Not connected to Spotify. Click Connect and authenticate.'); return; }
+                // ensure device id
+                if (!spotifyDeviceId) {
+                    // try to initialize player and wait briefly
+                    await initSpotifyPlayer();
+                    if (!spotifyDeviceId) { alert('Player not ready. Make sure you have Spotify open and the Web Playback SDK initialised (Spotify Premium required).'); return; }
+                }
+                try {
+                    const url = `https://api.spotify.com/v1/me/player/play?device_id=${spotifyDeviceId}`;
+                    const res = await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ uris: [uri] })
+                    });
+                    if (res.status === 204) return true;
+                    const text = await res.text();
+                    console.warn('Play failed', res.status, text);
+                    alert('Playback failed. Check your Spotify Premium status and token scopes.');
+                    return false;
+                } catch (e) { console.error(e); alert('Playback error'); return false; }
+            }
+
+            // add to Spotify queue
+            async function addToSpotifyQueue(uri) {
+                const token = getSpotifyToken(); if (!token) { alert('Not connected'); return; }
+                try {
+                    const url = `https://api.spotify.com/v1/me/player/queue?uri=${encodeURIComponent(uri)}&device_id=${spotifyDeviceId || ''}`;
+                    const res = await fetch(url, { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+                    if (res.status === 204) return true; else { console.warn('Queue failed', res.status); return false; }
+                } catch (e) { console.error(e); return false; }
+            }
+
+            // Search behavior: keep existing preview behavior but prefer SDK playback if available
+            spotifySearchBtn.addEventListener('click', () => { doSpotifySearch(); });
+            spotifyQuery.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSpotifySearch(); } });
+
+            async function doSpotifySearch() {
+                const q = spotifyQuery.value.trim();
+                const token = getSpotifyToken();
+                spotifyResults.innerHTML = '';
+                if (!token) { spotifyResults.innerHTML = '<div class="muted">No token. Click Connect and authenticate with Spotify.</div>'; return; }
+                if (!q) { spotifyResults.innerHTML = '<div class="muted">Enter search terms.</div>'; return; }
+                spotifyResults.innerHTML = '<div class="muted">Searching...</div>';
+                try {
+                    const res = await fetch('https://api.spotify.com/v1/search?type=track&q=' + encodeURIComponent(q) + '&limit=12', { headers: { Authorization: 'Bearer ' + token } });
+                    if (res.status === 401) { spotifyResults.innerHTML = '<div class="muted">Token expired or invalid. Reconnect.</div>'; return; }
+                    const data = await res.json();
+                    renderSpotifyResults(data.tracks.items || []);
+                } catch (err) { spotifyResults.innerHTML = '<div class="muted">Search failed.</div>'; }
+            }
+
+            function renderSpotifyResults(items) {
+                spotifyResults.innerHTML = '';
+                if (!items.length) { spotifyResults.innerHTML = '<div class="muted">No results</div>'; return; }
+                items.forEach(track => {
+                    const el = document.createElement('div'); el.className = 'album-item';
+                    const img = track.album.images[1] ? track.album.images[1].url : '';
+                    el.innerHTML = `
+                        <img src="${img}" alt="${escapeHtml(track.name)}" loading="lazy">
+                        <h3>${escapeHtml(track.name)}</h3>
+                        <p>${escapeHtml(track.artists.map(a => a.name).join(', '))}</p>
+                        <div class="album-actions">
+                            <button class="icon-btn spotify-play">Play on Spotify</button>
+                            <button class="icon-btn spotify-add">Add to Spotify Queue</button>
+                        </div>
+                    `;
+                    el.querySelector('.spotify-play').addEventListener('click', async () => {
+                        // prefer full Spotify playback via SDK
+                        if (track.uri) {
+                            const ok = await playOnSpotify(track.uri);
+                            if (ok) { nowTitle.textContent = track.name; nowArtist.textContent = track.artists.map(a => a.name).join(', '); }
+                        } else if (track.preview_url) { audio.src = track.preview_url; audio.play().catch(() => { }); nowTitle.textContent = track.name; nowArtist.textContent = track.artists.map(a => a.name).join(', '); }
+                        else alert('No playable preview or URI available.');
+                    });
+                    el.querySelector('.spotify-add').addEventListener('click', async () => {
+                        if (track.uri) { const ok = await addToSpotifyQueue(track.uri); if (ok) alert('Added to Spotify queue'); else alert('Failed to add to queue.'); }
+                        else alert('Cannot add: no URI available.');
+                    });
+                    spotifyResults.appendChild(el);
+                });
+            }
+
+            function escapeHtml(s) { return (s + '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" })[c]); }
+
+            // listen for messages from popup (optional) - popup can postMessage token back
+            window.addEventListener('message', (ev) => {
+                try {
+                    if (ev.data && ev.data.type === 'spotify_token' && ev.data.token) { setSpotifyTokenRaw(ev.data.token, ev.data.expires_in || null); initSpotifyPlayer(); }
+                } catch (e) { }
+            }, false);
+
+            // expose init for manual call
+            window.Nostalgist = window.Nostalgist || {};
+            window.Nostalgist.initSpotifyPlayer = initSpotifyPlayer;
+
+        })();
+    </script>
+    <script>
+        // Roman Urdu: Yeh JS upload feature ko handle karta hai. Agar feature nikalna ho to yahan wali script hata dena.
+        (function () {
+            const drop = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('upload-file');
+            const uploadBtn = document.getElementById('upload-btn');
+            const status = document.getElementById('upload-status');
+            const publicCheckbox = document.getElementById('public-checkbox');
+
+            function setStatus(t) { status.textContent = t; }
+
+            drop.addEventListener('click', () => fileInput.click());
+            drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('dragover'); });
+            drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+            drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('dragover'); if (e.dataTransfer.files && e.dataTransfer.files[0]) fileInput.files = e.dataTransfer.files; });
+
+            uploadBtn.addEventListener('click', async () => {
+                const f = fileInput.files[0];
+                if (!f) { setStatus('No file selected.'); return; }
+                // small client validation
+                if (!f.type.startsWith('audio/')) { setStatus('Please select an audio file.'); return; }
+                setStatus('Uploading...');
+                try {
+                    //http://127.0.0.1:5500/index.html  http://localhost:3000/upload
+                    const form = new FormData();
+                    form.append('track', f);
+                    form.append('public', publicCheckbox.checked ? '1' : '0');
+                    // change upload URL if your server runs on different host/port
+                    const res = await fetch('http://127.0.0.1:5500/upload', { method: 'POST', body: form });
+                    if (!res.ok) { const txt = await res.text(); setStatus('Upload failed: ' + txt); return; }
+                    const data = await res.json();
+                    setStatus('Uploaded: ' + (data.filename || 'file'));
+                    // add to local queue and UI so user can play immediately
+                    if (data.url) {
+                        queue.unshift({ src: data.url, title: f.name, artist: (localStorage.getItem('nostalgist_user') || 'Artist') });
+                        loadTrack(0);
+                        alert('Song uploaded and added to queue.');
+                    }
+                } catch (err) { console.error(err); setStatus('Upload error'); }
+            });
+        })();
+    </script>
+</body>
+
+</html>
